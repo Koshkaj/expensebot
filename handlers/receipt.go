@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -48,20 +49,21 @@ func HandleUploadDocument(svc *service.UploadService) echo.HandlerFunc {
 			Data:      make([]byte, buf.Len()),
 		}
 		copy(fileDocument.Data, buf.Bytes())
-		if err := svc.Store.Save(fileName, buf); err != nil {
+		ctx := context.Background()
+		if err := svc.Save(ctx, fileName, buf); err != nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
-		jsoned, err := svc.GoogleProcessor.Process(fileDocument)
+		jsoned, err := svc.Process(ctx, fileDocument)
 		if err != nil || jsoned == nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
 		document.FileDataJSON = fmt.Sprintf("%s.json", uuid)
 
-		if err := svc.Store.Save(document.FileDataJSON, bytes.NewBuffer(jsoned)); err != nil {
+		if err := svc.Save(ctx, document.FileDataJSON, bytes.NewBuffer(jsoned)); err != nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
 
-		if err := svc.DB.Create(document); err != nil {
+		if err := svc.CreateDocument(ctx, document); err != nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
 		return c.JSON(200, document)
@@ -70,7 +72,8 @@ func HandleUploadDocument(svc *service.UploadService) echo.HandlerFunc {
 
 func HandleGetDocument(svc *service.UploadService) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		document, err := svc.DB.Get(uuid.MustParse(c.Param("id")))
+		ctx := context.Background()
+		document, err := svc.GetDocument(ctx, uuid.MustParse(c.Param("id")))
 		if err != nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}

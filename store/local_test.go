@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLocalStore(t *testing.T) {
@@ -41,23 +43,15 @@ func TestLocalStore(t *testing.T) {
 		t.Run(fmt.Sprintf("TestLocalStore-%s", tc.fileName), func(t *testing.T) {
 			buf := bytes.NewBuffer(tc.file)
 			err := ls.Save(tc.fileName, buf)
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.NoError(t, err)
 
 			f, err := ls.Get(tc.fileName)
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.NoError(t, err)
 
 			readFile, err := io.ReadAll(f)
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.NoError(t, err)
 
-			if string(readFile) != string(tc.file) {
-				t.Fatalf("expected %s, got %s", string(tc.file), string(readFile))
-			}
+			assert.Equal(t, tc.file, readFile)
 		})
 	}
 }
@@ -91,18 +85,11 @@ func TestLocalStoreError(t *testing.T) {
 		t.Run(fmt.Sprintf("TestLocalStoreError-%s", tc.fileName), func(t *testing.T) {
 			buf := bytes.NewBuffer(tc.file)
 			err := ls.Save(tc.fileName, buf)
-			if err == nil {
-				t.Fatalf("expected error, got nil")
-			}
+			assert.Error(t, err)
 
 			f, err := ls.Get(tc.fileName)
-			if err == nil {
-				t.Fatalf("expected error, got nil")
-			}
-			if f != nil {
-				defer f.Close()
-				t.Fatalf("expected nil file, got %v", f)
-			}
+			assert.Error(t, err)
+			assert.Nil(t, f)
 		})
 	}
 }
