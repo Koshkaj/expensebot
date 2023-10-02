@@ -1,3 +1,6 @@
+install:
+	@go mod download
+
 run:
 	@go run main.go
 
@@ -10,4 +13,4 @@ mongo:
 test:
 	@ go test -v ./...
 
-.PHONY: run mongo env test
+.PHONY: run mongo env test install
