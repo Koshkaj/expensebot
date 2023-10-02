@@ -1,7 +1,7 @@
 package store
 
 import (
-	"errors"
+	"fmt"
 	"io"
 
 	"github.com/koshkaj/expensebot/config"
@@ -21,7 +21,8 @@ func CreateFileStore(storeType string) (Storer, error) {
 		}
 		return NewLocalStore(cfg), nil
 	default:
-		return nil, errors.New("invalid store type")
+		return nil, fmt.Errorf("invalid store type")
+
 	}
 
 }

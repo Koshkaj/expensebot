@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"os"
 
 	"github.com/google/uuid"
@@ -27,6 +27,7 @@ func CreateDatabase(dbType string) (Databaser, error) {
 		}
 		return InitMongo(context.Background(), mongoConf), nil
 	default:
-		return nil, errors.New("invalid database type")
+		return nil, fmt.Errorf("invalid database type")
+
 	}
 }
