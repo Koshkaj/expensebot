@@ -20,12 +20,14 @@ type ServerConfig struct {
 }
 
 type GoogleProcessorConfig struct {
-	Location    string
-	ProjectID   string
-	ProcessorID string
-	Endpoint    string
+	Location        string
+	ProjectID       string
+	ProcessorID     string
+	CredentialsFile string
+	Endpoint        string
 }
 
 type StoreConfig struct {
+	Type          string
 	DirectoryName string
 }

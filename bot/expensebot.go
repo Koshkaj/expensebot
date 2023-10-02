@@ -49,30 +49,23 @@ func (gp *GoogleProcessor) createProcessRequest(ctx context.Context, file *types
 	return r, nil
 }
 
-func (gp *GoogleProcessor) Process(fileDocument *types.File) error {
+func (gp *GoogleProcessor) Process(fileDocument *types.File) ([]byte, error) {
 	ctx := context.Background()
-
-	client, err := documentai.NewDocumentProcessorClient(ctx)
-	defer client.Close()
-	if err != nil {
-		return err
-	}
+	defer gp.client.Close()
 	request, err := gp.createProcessRequest(ctx, fileDocument)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	response, err := client.ProcessDocument(ctx, request)
+	response, err := gp.client.ProcessDocument(ctx, request)
 	if err != nil {
 		log.Print("Error processing document: ", err)
-		return err
+		return nil, err
 	}
 	document := response.GetDocument()
 	jsoned, err := json.Marshal(document)
 	if err != nil {
 		log.Print("Error marshaling document: ", err)
-		return err
+		return nil, err
 	}
-	fmt.Println(jsoned)
-
-	return nil
+	return jsoned, nil
 }

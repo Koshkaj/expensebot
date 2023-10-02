@@ -30,7 +30,7 @@ func NewServer(e *echo.Echo, c *config.Config, m db.Databaser) *Server {
 	return &Server{Echo: e, Config: c, db: m}
 }
 
-func InitServer() *Server {
+func InitServer() error {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Pre(middleware.RemoveTrailingSlash())
@@ -43,19 +43,27 @@ func InitServer() *Server {
 		},
 	}
 	botConfig := &config.GoogleProcessorConfig{
-		Location:    os.Getenv("GCP_LOCATION"),
-		ProjectID:   os.Getenv("GCP_PROJECT_ID"),
-		ProcessorID: os.Getenv("GCP_PROCESSOR_ID"),
-		Endpoint:    fmt.Sprintf("%s-documentai.googleapis.com:443", os.Getenv("GCP_LOCATION")),
+		Location:        os.Getenv("GCP_LOCATION"),
+		ProjectID:       os.Getenv("GCP_PROJECT_ID"),
+		ProcessorID:     os.Getenv("GCP_PROCESSOR_ID"),
+		CredentialsFile: os.Getenv("CREDENTIALS_FILE_PATH"),
+		Endpoint:        fmt.Sprintf("%s-documentai.googleapis.com:443", os.Getenv("GCP_LOCATION")),
 	}
 	gp := bot.NewGoogleProcessor(botConfig)
 	database, err := db.CreateDatabase(serverConfig.DbType)
+	// defer database.close() if we have such method
 	if err != nil {
 		log.Fatal(err)
 	}
 	store, err := store.CreateFileStore(serverConfig.StoreType)
+	// defer store.close() if we have such method
 	if err != nil {
 		log.Fatal(err)
+	}
+	if serverConfig.StoreType == "local" {
+		// Create a directory to store files
+		directoryName := os.Getenv("STORE_DIRECTORY_NAME")
+		os.Mkdir(directoryName, 0755)
 	}
 
 	uploadService := service.NewUploadService(gp, database, store)
@@ -68,5 +76,5 @@ func InitServer() *Server {
 
 		indexGroup.Add("GET", "ping", server.handlePing)
 	}
-	return server
+	return server.Start(serverConfig.Server.Port)
 }

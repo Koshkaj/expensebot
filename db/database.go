@@ -27,7 +27,7 @@ func CreateDatabase(dbType string) (Databaser, error) {
 		}
 		return InitMongo(context.Background(), mongoConf), nil
 	default:
-		return nil, fmt.Errorf("invalid database type")
+		return nil, fmt.Errorf("invalid  type")
 
 	}
 }

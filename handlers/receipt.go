@@ -21,12 +21,12 @@ func HandleUploadDocument(svc *service.UploadService) echo.HandlerFunc {
 		}
 		src, err := file.Open()
 		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to open file")
+			return c.String(http.StatusUnprocessableEntity, "failed to open file")
 		}
 		defer src.Close()
 		buf := bytes.NewBuffer(nil)
 		if _, err := io.Copy(buf, src); err != nil {
-			return c.String(http.StatusInternalServerError, fmt.Sprintf("failed to copy file: %s", err.Error()))
+			return c.String(http.StatusUnprocessableEntity, fmt.Sprintf("failed to copy file: %s", err.Error()))
 		}
 		mimeType := http.DetectContentType(buf.Bytes())
 		if !util.IsValidMimeType(mimeType) {
@@ -41,6 +41,7 @@ func HandleUploadDocument(svc *service.UploadService) echo.HandlerFunc {
 		}
 		fileName := fmt.Sprintf("%s.%s", uuid, util.GetFileExtension(mimeType))
 		fileDocument := &types.File{
+			Id:        uuid,
 			Name:      fileName,
 			Extension: util.GetFileExtension(mimeType),
 			MimeType:  mimeType,
@@ -48,16 +49,21 @@ func HandleUploadDocument(svc *service.UploadService) echo.HandlerFunc {
 		}
 		copy(fileDocument.Data, buf.Bytes())
 		if err := svc.Store.Save(fileName, buf); err != nil {
-			return c.String(http.StatusInternalServerError, err.Error())
+			return c.String(http.StatusUnprocessableEntity, err.Error())
+		}
+		jsoned, err := svc.GoogleProcessor.Process(fileDocument)
+		if err != nil || jsoned == nil {
+			return c.String(http.StatusUnprocessableEntity, err.Error())
+		}
+		document.FileDataJSON = fmt.Sprintf("%s.json", uuid)
+
+		if err := svc.Store.Save(document.FileDataJSON, bytes.NewBuffer(jsoned)); err != nil {
+			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
 
-		if err := svc.GoogleProcessor.Process(fileDocument); err != nil {
-			return c.String(http.StatusInternalServerError, err.Error())
+		if err := svc.DB.Create(document); err != nil {
+			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
-
-		// if err := svc.DB.Create(document); err != nil {
-		// 	return c.String(http.StatusInternalServerError, err.Error())
-		// }
 		return c.JSON(200, document)
 	}
 }
@@ -66,7 +72,7 @@ func HandleGetDocument(svc *service.UploadService) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		document, err := svc.DB.Get(uuid.MustParse(c.Param("id")))
 		if err != nil {
-			return c.String(http.StatusInternalServerError, err.Error())
+			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
 		return c.JSON(200, document)
 	}

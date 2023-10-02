@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 
@@ -9,12 +9,11 @@ import (
 )
 
 func main() {
-	s := server.InitServer()
 	go func() {
-		s.Logger.Fatal(s.Start(s.Config.Server.Port))
+		log.Fatal(server.InitServer())
 	}()
 	terminate := make(chan os.Signal, 1)
 	signal.Notify(terminate, os.Interrupt, os.Kill)
 	<-terminate
-	fmt.Println("Shutting down server...")
+	log.Println("Shutting down server...")
 }
