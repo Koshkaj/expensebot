@@ -37,5 +37,6 @@ For sake of this task I went with the simple flat file structure which I think i
 
 Regarding the unit tests, I did not spend too much time to have 100% coverage becuase this task is for demonstration purposes.
 
+Logging is another thing to point out, currently I am using the logger provided by echo but would be better to have `slog` or `uber-go/zap` for structurized logging
 
 ### Author: Davit.K
