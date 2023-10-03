@@ -66,17 +66,21 @@ func HandleUploadDocument(svc *service.UploadService) echo.HandlerFunc {
 		if err := svc.CreateDocument(ctx, document); err != nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
-		return c.JSON(200, document)
+		return c.JSON(http.StatusOK, document)
 	}
 }
 
 func HandleGetDocument(svc *service.UploadService) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := context.Background()
-		document, err := svc.GetDocument(ctx, uuid.MustParse(c.Param("id")))
+		uuid, err := uuid.Parse(c.Param("id"))
 		if err != nil {
 			return c.String(http.StatusUnprocessableEntity, err.Error())
 		}
-		return c.JSON(200, document)
+		document, err := svc.GetDocument(ctx, uuid)
+		if err != nil {
+			return c.String(http.StatusUnprocessableEntity, err.Error())
+		}
+		return c.JSON(http.StatusOK, document)
 	}
 }
