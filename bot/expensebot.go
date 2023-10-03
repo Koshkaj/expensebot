@@ -18,7 +18,7 @@ type GoogleProcessor struct {
 	client *documentai.DocumentProcessorClient
 }
 
-func NewGoogleProcessor(cfg *config.GoogleProcessorConfig) *GoogleProcessor {
+func NewGoogleProcessor(cfg *config.GoogleProcessorConfig) Processor {
 	ctx := context.Background()
 	client, err := documentai.NewDocumentProcessorClient(ctx, option.WithEndpoint(cfg.Endpoint))
 	if err != nil {

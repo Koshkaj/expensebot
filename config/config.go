@@ -1,9 +1,10 @@
 package config
 
 type Config struct {
-	DbType    string
-	StoreType string
-	Server    ServerConfig
+	DbType        string
+	StoreType     string
+	ProcessorType string
+	Server        ServerConfig
 }
 
 type MongoConfig struct {

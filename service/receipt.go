@@ -13,16 +13,16 @@ import (
 
 // You could have an interface for services but in this case I implemented without it
 type UploadService struct {
-	googleProcessor *bot.GoogleProcessor
-	db              db.Databaser
-	store           store.Storer
+	processor bot.Processor
+	db        db.Databaser
+	store     store.Storer
 }
 
-func NewUploadService(gp *bot.GoogleProcessor, db db.Databaser, store store.Storer) *UploadService {
+func NewUploadService(gp bot.Processor, db db.Databaser, store store.Storer) *UploadService {
 	return &UploadService{
-		googleProcessor: gp,
-		db:              db,
-		store:           store,
+		processor: gp,
+		db:        db,
+		store:     store,
 	}
 }
 
@@ -43,5 +43,5 @@ func (s *UploadService) Get(ctx context.Context, fileName string) (io.Reader, er
 }
 
 func (s *UploadService) Process(ctx context.Context, file *types.File) ([]byte, error) {
-	return s.googleProcessor.Process(file)
+	return s.processor.Process(file)
 }

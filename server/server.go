@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -36,29 +35,26 @@ func InitServer() error {
 	e.Pre(middleware.RemoveTrailingSlash())
 	util.LoadDotenv()
 	serverConfig := &config.Config{
-		DbType:    os.Getenv("DB_TYPE"),
-		StoreType: os.Getenv("STORE_TYPE"),
+		DbType:        os.Getenv("DB_TYPE"),
+		StoreType:     os.Getenv("STORE_TYPE"),
+		ProcessorType: os.Getenv("PROCESSOR_TYPE"),
 		Server: config.ServerConfig{
 			Port: os.Getenv("SERVER_PORT"),
 		},
 	}
-	botConfig := &config.GoogleProcessorConfig{
-		Location:        os.Getenv("GCP_LOCATION"),
-		ProjectID:       os.Getenv("GCP_PROJECT_ID"),
-		ProcessorID:     os.Getenv("GCP_PROCESSOR_ID"),
-		CredentialsFile: os.Getenv("CREDENTIALS_FILE_PATH"),
-		Endpoint:        fmt.Sprintf("%s-documentai.googleapis.com:443", os.Getenv("GCP_LOCATION")),
+	gp, err := bot.CreateProcessor(serverConfig.ProcessorType)
+	if err != nil {
+		log.Fatalf("error creating a processor: %v", err)
 	}
-	gp := bot.NewGoogleProcessor(botConfig)
 	database, err := db.CreateDatabase(serverConfig.DbType)
 	// defer database.close() if we have such method
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error creating a database: %v", err)
 	}
 	store, err := store.CreateFileStore(serverConfig.StoreType)
 	// defer store.close() if we have such method
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error creating a store: %v", err)
 	}
 	if serverConfig.StoreType == "local" {
 		// Create a directory to store files
