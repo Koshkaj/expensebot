@@ -22,6 +22,29 @@ make test # you've guessed it, tests *_test.go files
 make run # runs the project
 
 ```
+## Env example:
+
+```
+DB_TYPE=mongo
+STORE_TYPE=local
+PROCESSOR_TYPE=google
+STORE_DIRECTORY_NAME=fileStorage
+SERVER_PORT=:8080
+MONGO_URI=mongodb://myuser:mypass@localhost:27017
+MONGO_DB_NAME=expenses_main
+MONGO_COLLECTION=receipts
+GCP_LOCATION=
+GCP_PROJECT_ID=
+GCP_PROCESSOR_ID=
+
+```
+
+
+## Exposed endpoints:
+```
+POST /documents - uploads a document (body -> key: "receipt", value: file)
+GET /documents/<UUID> - gets existing document data
+```
 
 ## How can this be improved ?
 
